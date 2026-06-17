@@ -43,6 +43,14 @@ const AGENCY_GUIDE_CONFIG = {
   // Set to null to disable.
   agencyCodeVariable: null,           // site stores the code in the #agency-code element, not a global var
 
+  // CSS selector for the element that displays the resolved agency name on screen.
+  // Used only for naming the downloaded file — the PDF content still gets the code.
+  agencyNameSelector: "#greeting-name",  // <span class="greeting-name" id="greeting-name">Happy Beginnings Surrogacy</span>
+
+  // Fallback: JS variable name that holds the agency name (used if selector finds nothing).
+  // Set to null to disable.
+  agencyNameVariable: null,
+
   // Exact placeholder string in the PDF that will be replaced
   placeholder: "[YOUR AGENCY ID]",
 
@@ -78,7 +86,9 @@ async function downloadAgencyGuide(event) {
 
   try {
     const pdfBytes = await buildPersonalizedPdf(agencyId);
-    triggerDownload(pdfBytes, `Newborn_Insurance_Agency_Guide_${sanitizeFilename(agencyId)}.pdf`);
+    const agencyName = resolveAgencyName();
+    const fileLabel = agencyName || agencyId; // fall back to code if name not found
+    triggerDownload(pdfBytes, `Newborn_Insurance_Agency_Guide_${sanitizeFilename(fileLabel)}.pdf`);
   } catch (err) {
     console.error("Agency Guide PDF generation failed:", err);
     alert("Sorry, there was a problem generating the PDF. Please try again or contact Maverick Administrators.");
@@ -150,6 +160,28 @@ function resolveAgencyCode() {
   // Try global variable
   if (cfg.agencyCodeVariable && window[cfg.agencyCodeVariable]) {
     return String(window[cfg.agencyCodeVariable]).trim();
+  }
+
+  return null;
+}
+
+/**
+ * Resolves the agency name from the page — tries the DOM selector first,
+ * then falls back to a global JS variable. Returns null if not found so the
+ * caller can fall back to the agency code.
+ */
+function resolveAgencyName() {
+  const cfg = AGENCY_GUIDE_CONFIG;
+
+  // Try DOM selector
+  if (cfg.agencyNameSelector) {
+    const el = document.querySelector(cfg.agencyNameSelector);
+    if (el && el.textContent.trim()) return el.textContent.trim();
+  }
+
+  // Try global variable
+  if (cfg.agencyNameVariable && window[cfg.agencyNameVariable]) {
+    return String(window[cfg.agencyNameVariable]).trim();
   }
 
   return null;
