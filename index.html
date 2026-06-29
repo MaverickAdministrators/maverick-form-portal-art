@@ -1895,8 +1895,8 @@
 
     <!-- Greeting card -->
     <section class="card greeting-card hidden" id="greeting-card" aria-live="polite">
-      <div class="eyebrow">Agency Verified</div>
-      <h2>Hi <span class="greeting-name" id="greeting-name"></span>. Your Agency Code is <span class="code-pill" id="agency-code"></span>.</h2>
+      <div class="eyebrow" id="verified-label">Agency Verified</div>
+      <h2>Hi <span class="greeting-name" id="greeting-name"></span>. <span id="code-label">Your Agency Code is</span> <span class="code-pill" id="agency-code"></span>.</h2>
       <p class="meta-line" id="meta-line"></p>
       <div class="reminder" id="reminder-banner">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -2593,6 +2593,8 @@
   const errorCard = document.getElementById("error-card");
   const greetingCard = document.getElementById("greeting-card");
   const greetingName = document.getElementById("greeting-name");
+  const verifiedLabel = document.getElementById("verified-label");
+  const codeLabel = document.getElementById("code-label");
   const agencyCode = document.getElementById("agency-code");
   const metaLine = document.getElementById("meta-line");
   const reminderText = document.getElementById("reminder-text");
@@ -2697,7 +2699,13 @@
     greetingName.textContent = agency.name;
     agencyCode.textContent = agency.id;
     metaLine.innerHTML = `Issuing State: <strong>${stateFull} (${agency.state})</strong>. Below you will find the rates for your issuing state.`;
-    reminderText.textContent = `Please save this information before continuing. You will need your Agency Code (${agency.id}) and the rates below when filling out the application form.`;
+
+    const hideAgencyWord = agency.id === "SeedTrust";
+    verifiedLabel.textContent = hideAgencyWord ? "Verified" : "Agency Verified";
+    codeLabel.textContent = hideAgencyWord ? "Your Code is" : "Your Agency Code is";
+    reminderText.textContent = hideAgencyWord
+      ? `Please save this information before continuing. You will need your Code (${agency.id}) and the rates below when filling out the application form.`
+      : `Please save this information before continuing. You will need your Agency Code (${agency.id}) and the rates below when filling out the application form.`;
 
     ratesSubtitle.textContent = `Singleton policy rates for ${stateFull} — current as of 2026.`;
     renderRates(agency.state);
